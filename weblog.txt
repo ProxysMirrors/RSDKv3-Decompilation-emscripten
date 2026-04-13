@@ -1,0 +1,298 @@
+RSDKv3.js:1 WARNING: using emscripten GL emulation. This is a collection of limited workarounds, do not expect it to work.
+init @ RSDKv3.js:1
+RSDKv3.js:1 WARNING: using emscripten GL emulation unsafe opts. If weirdness happens, try -sGL_UNSAFE_OPTS=0
+init @ RSDKv3.js:1
+RSDKv3.js:1 IDBFS sync requested, populate: true
+RSDKv3.js:1 IDBFS sync successful, populate: true
+RSDKv3.html:1 DevMenu: ON, DebugMode: ON
+RSDKv3.html:1 DevMenu: ON, DebugMode: ON
+RSDKv3.html:1 Engine Init started (Storage Ready)
+RSDKv3.html:1 Engine Init started (Storage Ready)
+RSDKv3.html:1 Data file: Data.rsdk
+RSDKv3.html:1 Data file: Data.rsdk
+RSDKv3.html:1 CheckRSDKFile: Raw filePath='/user/Data.rsdk', processed='/user/Data.rsdk'
+RSDKv3.html:1 CheckRSDKFile: Raw filePath='/user/Data.rsdk', processed='/user/Data.rsdk'
+RSDKv3.html:1 Checking RSDK file: /user/Data.rsdk (handle: 0)
+RSDKv3.html:1 Checking RSDK file: /user/Data.rsdk (handle: 0)
+RSDKv3.html:1 RSDK file open FAILED
+RSDKv3.html:1 RSDK file open FAILED
+RSDKv3.html:1 Couldn't load file 'Data/Scripts/ByteCode/GlobalCode.bin'
+RSDKv3.html:1 Couldn't load file 'Data/Scripts/ByteCode/GlobalCode.bin'
+RSDKv3.html:1 Couldn't load file 'Data/Scripts/ByteCode/GS000.bin'
+RSDKv3.html:1 Couldn't load file 'Data/Scripts/ByteCode/GS000.bin'
+RSDKv3.html:1 CheckRSDKFile: Raw filePath='Data.rsdk', processed='Data.rsdk'
+RSDKv3.html:1 CheckRSDKFile: Raw filePath='Data.rsdk', processed='Data.rsdk'
+RSDKv3.html:1 Checking RSDK file: Data.rsdk (handle: 0xba6150)
+RSDKv3.html:1 Checking RSDK file: Data.rsdk (handle: 0xba6150)
+RSDKv3.html:1 RSDK file opened successfully
+RSDKv3.html:1 RSDK file opened successfully
+RSDKv3.html:1 Couldn't load file 'Data/Scripts/ByteCode/GlobalCode.bin'
+RSDKv3.html:1 Couldn't load file 'Data/Scripts/ByteCode/GlobalCode.bin'
+RSDKv3.html:1 Loaded File 'Data/Scripts/ByteCode/GS000.bin'
+RSDKv3.html:1 Loaded File 'Data/Scripts/ByteCode/GS000.bin'
+RSDKv3.html:1 Loaded File 'Data/Game/GameConfig.bin'
+RSDKv3.html:1 Loaded File 'Data/Game/GameConfig.bin'
+RSDKv3.html:1 GameConfig loaded successfully
+RSDKv3.html:1 GameConfig loaded successfully
+RSDKv3.js:1 WARNING: using emscripten GL immediate mode emulation. This is very limited in what it supports
+init @ RSDKv3.js:1
+RSDKv3.html:1 RenderDevice initialised successfully
+RSDKv3.html:1 RenderDevice initialised successfully
+RSDKv3.js:1 [Deprecation] The ScriptProcessorNode is deprecated. Use AudioWorkletNode instead. (https://bit.ly/audio-worklet)
+210496 @ RSDKv3.js:1
+RSDKv3.html:1 Opened audio device: 2
+RSDKv3.html:1 Opened audio device: 2
+RSDKv3.html:1 Loaded File 'Data/Game/GameConfig.bin'
+RSDKv3.html:1 Loaded File 'Data/Game/GameConfig.bin'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Jump.wav'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Jump.wav'
+RSDKv3.html:1 Set Global SFX (0) name to: Jump
+RSDKv3.html:1 Set Global SFX (0) name to: Jump
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Ring.wav'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Ring.wav'
+RSDKv3.html:1 Set Global SFX (1) name to: Ring
+RSDKv3.html:1 Set Global SFX (1) name to: Ring
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Ring.wav'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Ring.wav'
+RSDKv3.html:1 Set Global SFX (2) name to: Ring
+RSDKv3.html:1 Set Global SFX (2) name to: Ring
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Skidding.wav'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Skidding.wav'
+RSDKv3.html:1 Set Global SFX (3) name to: Skidding
+RSDKv3.html:1 Set Global SFX (3) name to: Skidding
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/LoseRings.wav'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/LoseRings.wav'
+RSDKv3.html:1 Set Global SFX (4) name to: LoseRings
+RSDKv3.html:1 Set Global SFX (4) name to: LoseRings
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Hurt.wav'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Hurt.wav'
+RSDKv3.html:1 Set Global SFX (5) name to: Hurt
+RSDKv3.html:1 Set Global SFX (5) name to: Hurt
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Charge.wav'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Charge.wav'
+RSDKv3.html:1 Set Global SFX (6) name to: Charge
+RSDKv3.html:1 Set Global SFX (6) name to: Charge
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Release.wav'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Release.wav'
+RSDKv3.html:1 Set Global SFX (7) name to: Release
+RSDKv3.html:1 Set Global SFX (7) name to: Release
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Destroy.wav'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Destroy.wav'
+RSDKv3.html:1 Set Global SFX (8) name to: Destroy
+RSDKv3.html:1 Set Global SFX (8) name to: Destroy
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/LampPost.wav'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/LampPost.wav'
+RSDKv3.html:1 Set Global SFX (9) name to: LampPost
+RSDKv3.html:1 Set Global SFX (9) name to: LampPost
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/BlueShield.wav'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/BlueShield.wav'
+RSDKv3.html:1 Set Global SFX (10) name to: BlueShield
+RSDKv3.html:1 Set Global SFX (10) name to: BlueShield
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Spring.wav'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Spring.wav'
+RSDKv3.html:1 Set Global SFX (11) name to: Spring
+RSDKv3.html:1 Set Global SFX (11) name to: Spring
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Future.wav'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Future.wav'
+RSDKv3.html:1 Set Global SFX (12) name to: Future
+RSDKv3.html:1 Set Global SFX (12) name to: Future
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Past.wav'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Past.wav'
+RSDKv3.html:1 Set Global SFX (13) name to: Past
+RSDKv3.html:1 Set Global SFX (13) name to: Past
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/TimeWarp.wav'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/TimeWarp.wav'
+RSDKv3.html:1 Set Global SFX (14) name to: TimeWarp
+RSDKv3.html:1 Set Global SFX (14) name to: TimeWarp
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/SignPost.wav'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/SignPost.wav'
+RSDKv3.html:1 Set Global SFX (15) name to: SignPost
+RSDKv3.html:1 Set Global SFX (15) name to: SignPost
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/ScoreAdd.wav'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/ScoreAdd.wav'
+RSDKv3.html:1 Set Global SFX (16) name to: ScoreAdd
+RSDKv3.html:1 Set Global SFX (16) name to: ScoreAdd
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/ScoreTotal.wav'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/ScoreTotal.wav'
+RSDKv3.html:1 Set Global SFX (17) name to: ScoreTotal
+RSDKv3.html:1 Set Global SFX (17) name to: ScoreTotal
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/SpecialRing.wav'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/SpecialRing.wav'
+RSDKv3.html:1 Set Global SFX (18) name to: SpecialRing
+RSDKv3.html:1 Set Global SFX (18) name to: SpecialRing
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/SpecialWarp.wav'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/SpecialWarp.wav'
+RSDKv3.html:1 Set Global SFX (19) name to: SpecialWarp
+RSDKv3.html:1 Set Global SFX (19) name to: SpecialWarp
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/1Up.wav'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/1Up.wav'
+RSDKv3.html:1 Set Global SFX (20) name to: 1Up
+RSDKv3.html:1 Set Global SFX (20) name to: 1Up
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Achievement.wav'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Achievement.wav'
+RSDKv3.html:1 Set Global SFX (21) name to: Achievement
+RSDKv3.html:1 Set Global SFX (21) name to: Achievement
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Explosion.wav'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Explosion.wav'
+RSDKv3.html:1 Set Global SFX (22) name to: Explosion
+RSDKv3.html:1 Set Global SFX (22) name to: Explosion
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/MenuButton.wav'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/MenuButton.wav'
+RSDKv3.html:1 Set Global SFX (23) name to: MenuButton
+RSDKv3.html:1 Set Global SFX (23) name to: MenuButton
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Flying.wav'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Flying.wav'
+RSDKv3.html:1 Set Global SFX (24) name to: Flying
+RSDKv3.html:1 Set Global SFX (24) name to: Flying
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Tired.wav'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Tired.wav'
+RSDKv3.html:1 Set Global SFX (25) name to: Tired
+RSDKv3.html:1 Set Global SFX (25) name to: Tired
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/OuttaHere.wav'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/OuttaHere.wav'
+RSDKv3.html:1 Set Global SFX (26) name to: OuttaHere
+RSDKv3.html:1 Set Global SFX (26) name to: OuttaHere
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Select.wav'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Global/Select.wav'
+RSDKv3.html:1 Set Global SFX (27) name to: Select
+RSDKv3.html:1 Set Global SFX (27) name to: Select
+RSDKv3.html:1 AudioPlayback initialised successfully
+RSDKv3.html:1 AudioPlayback initialised successfully
+RSDKv3.html:1 Loaded File 'Data/Palettes/MasterPalette.act'
+RSDKv3.html:1 Loaded File 'Data/Palettes/MasterPalette.act'
+RSDKv3.html:1 Set Object (0) name to: Blank Object
+RSDKv3.html:1 Set Object (0) name to: Blank Object
+RSDKv3.html:1 Loading Scene Presentation Stages - TITLE SCREEN
+RSDKv3.html:1 Loading Scene Presentation Stages - TITLE SCREEN
+RSDKv3.html:1 Loaded File 'Data/Palettes/MasterPalette.act'
+RSDKv3.html:1 Loaded File 'Data/Palettes/MasterPalette.act'
+RSDKv3.html:1 Set Object (0) name to: Blank Object
+RSDKv3.html:1 Set Object (0) name to: Blank Object
+RSDKv3.html:1 Loaded File 'Data/Stages/Title/StageConfig.bin'
+RSDKv3.html:1 Loaded File 'Data/Stages/Title/StageConfig.bin'
+RSDKv3.html:1 Loaded File 'Data/Stages/Title/StageConfig.bin'
+RSDKv3.html:1 Loaded File 'Data/Stages/Title/StageConfig.bin'
+RSDKv3.html:1 Set Object (1) name to: Sega
+RSDKv3.html:1 Set Object (1) name to: Sega
+RSDKv3.html:1 Set Object (2) name to: Sonic
+RSDKv3.html:1 Set Object (2) name to: Sonic
+RSDKv3.html:1 Set Object (3) name to: Logo
+RSDKv3.html:1 Set Object (3) name to: Logo
+RSDKv3.html:1 Set Object (4) name to: Background
+RSDKv3.html:1 Set Object (4) name to: Background
+RSDKv3.html:1 Set Object (5) name to: Clouds
+RSDKv3.html:1 Set Object (5) name to: Clouds
+RSDKv3.html:1 Set Object (6) name to: Touch Start
+RSDKv3.html:1 Set Object (6) name to: Touch Start
+RSDKv3.html:1 Set Object (7) name to: CWLogo
+RSDKv3.html:1 Set Object (7) name to: CWLogo
+RSDKv3.html:1 Loaded File 'Data/Scripts/ByteCode/PS000.bin'
+RSDKv3.html:1 Loaded File 'Data/Scripts/ByteCode/PS000.bin'
+RSDKv3.html:1 Loaded File 'Data/Scripts/ByteCode/PS000.bin'
+RSDKv3.html:1 Loaded File 'Data/Scripts/ByteCode/PS000.bin'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Stage/Sega.wav'
+RSDKv3.html:1 Loaded File 'Data/SoundFX/Stage/Sega.wav'
+RSDKv3.html:1 Set Stage SFX (0) name to: Sega
+RSDKv3.html:1 Set Stage SFX (0) name to: Sega
+RSDKv3.html:1 Loaded File 'Data/Stages/Title/16x16Tiles.gif'
+RSDKv3.html:1 Loaded File 'Data/Stages/Title/16x16Tiles.gif'
+RSDKv3.html:1 Loaded File 'Data/Stages/Title/16x16Tiles.gif'
+RSDKv3.html:1 Loaded File 'Data/Stages/Title/16x16Tiles.gif'
+RSDKv3.html:1 Loaded File 'Data/Stages/Title/CollisionMasks.bin'
+RSDKv3.html:1 Loaded File 'Data/Stages/Title/CollisionMasks.bin'
+RSDKv3.html:1 Loaded File 'Data/Stages/Title/Backgrounds.bin'
+RSDKv3.html:1 Loaded File 'Data/Stages/Title/Backgrounds.bin'
+RSDKv3.html:1 Loaded File 'Data/Stages/Title/128x128Tiles.bin'
+RSDKv3.html:1 Loaded File 'Data/Stages/Title/128x128Tiles.bin'
+RSDKv3.html:1 Loaded File 'Data/Stages/Title/Act1.bin'
+RSDKv3.html:1 Loaded File 'Data/Stages/Title/Act1.bin'
+RSDKv3.html:1 Loaded File 'Data/Sprites/Title/Title.gif'
+RSDKv3.html:1 Loaded File 'Data/Sprites/Title/Title.gif'
+RSDKv3.html:1 Loaded File 'Data/Sprites/Title/Clouds.gif'
+RSDKv3.html:1 Loaded File 'Data/Sprites/Title/Clouds.gif'
+RSDKv3.html:1 Loaded File 'Data/Sprites/Title/CWLogo.gif'
+RSDKv3.html:1 Loaded File 'Data/Sprites/Title/CWLogo.gif'
+RSDKv3.html:1 Callback: Display Logos
+RSDKv3.html:1 Callback: Display Logos
+RSDKv3.html:1 Loaded File 'Data/Music/JP/TitleScreen.ogg'
+RSDKv3.html:1 Loaded File 'Data/Music/JP/TitleScreen.ogg'
+RSDKv3.html:1 Callback: Press Start
+RSDKv3.html:1 Callback: Press Start
+RSDKv3.html:1 Reloading Scene Presentation Stages - TITLE SCREEN
+RSDKv3.html:1 Reloading Scene Presentation Stages - TITLE SCREEN
+RSDKv3.html:1 Loaded File 'Data/Stages/Title/128x128Tiles.bin'
+RSDKv3.html:1 Loaded File 'Data/Stages/Title/128x128Tiles.bin'
+RSDKv3.html:1 Loaded File 'Data/Stages/Title/Act1.bin'
+RSDKv3.html:1 Loaded File 'Data/Stages/Title/Act1.bin'
+RSDKv3.html:1 Callback: Display Logos
+RSDKv3.html:1 Callback: Display Logos
+RSDKv3.html:1 Loaded File 'Data/Game/GameConfig.bin'
+RSDKv3.html:1 Loaded File 'Data/Game/GameConfig.bin'
+RSDKv3.html:1 Loaded File 'Data/Palettes/MasterPalette.act'
+RSDKv3.html:1 Loaded File 'Data/Palettes/MasterPalette.act'
+RSDKv3.html:1 Loaded File 'Data/Game/SystemText.gif'
+RSDKv3.html:1 Loaded File 'Data/Game/SystemText.gif'
+RSDKv3.html:1 Loaded File 'Data/Game/GameConfig.bin'
+RSDKv3.html:1 Loaded File 'Data/Game/GameConfig.bin'
+RSDKv3.html:1 Loaded File 'Data/Game/GameConfig.bin'
+RSDKv3.html:1 Loaded File 'Data/Game/GameConfig.bin'
+RSDKv3.html:1 Loaded File 'Data/Game/GameConfig.bin'
+RSDKv3.html:1 Loaded File 'Data/Game/GameConfig.bin'
+RSDKv3.html:1 Loading Scene Presentation Stages - DA GARDEN
+RSDKv3.html:1 Loading Scene Presentation Stages - DA GARDEN
+RSDKv3.html:1 Loaded File 'Data/Palettes/MasterPalette.act'
+RSDKv3.html:1 Loaded File 'Data/Palettes/MasterPalette.act'
+RSDKv3.html:1 Set Object (0) name to: Blank Object
+RSDKv3.html:1 Set Object (0) name to: Blank Object
+RSDKv3.html:1 Loaded File 'Data/Stages/DAgdn/StageConfig.bin'
+RSDKv3.html:1 Loaded File 'Data/Stages/DAgdn/StageConfig.bin'
+RSDKv3.html:1 Loaded File 'Data/Stages/DAgdn/StageConfig.bin'
+RSDKv3.html:1 Loaded File 'Data/Stages/DAgdn/StageConfig.bin'
+RSDKv3.html:1 Set Object (1) name to: BG Animation
+RSDKv3.html:1 Set Object (1) name to: BG Animation
+RSDKv3.html:1 Set Object (2) name to: Little Planet
+RSDKv3.html:1 Set Object (2) name to: Little Planet
+RSDKv3.html:1 Set Object (3) name to: Menu Control
+RSDKv3.html:1 Set Object (3) name to: Menu Control
+RSDKv3.html:1 Set Object (4) name to: Music Selector
+RSDKv3.html:1 Set Object (4) name to: Music Selector
+RSDKv3.html:1 Set Object (5) name to: Touch Buttons
+RSDKv3.html:1 Set Object (5) name to: Touch Buttons
+RSDKv3.html:1 Set Object (6) name to: Character Spawn
+RSDKv3.html:1 Set Object (6) name to: Character Spawn
+RSDKv3.html:1 Set Object (7) name to: Tails Biplane
+RSDKv3.html:1 Set Object (7) name to: Tails Biplane
+RSDKv3.html:1 Set Object (8) name to: Blue Bird
+RSDKv3.html:1 Set Object (8) name to: Blue Bird
+RSDKv3.html:1 Set Object (9) name to: Dr Eggman
+RSDKv3.html:1 Set Object (9) name to: Dr Eggman
+RSDKv3.html:1 Set Object (10) name to: Metal Sonic
+RSDKv3.html:1 Set Object (10) name to: Metal Sonic
+RSDKv3.html:1 Set Object (11) name to: Shooting Star
+RSDKv3.html:1 Set Object (11) name to: Shooting Star
+RSDKv3.html:1 Set Object (12) name to: UFO
+RSDKv3.html:1 Set Object (12) name to: UFO
+RSDKv3.html:1 Set Object (13) name to: Slow Bird
+RSDKv3.html:1 Set Object (13) name to: Slow Bird
+RSDKv3.html:1 Loaded File 'Data/Scripts/ByteCode/PS005.bin'
+RSDKv3.html:1 Loaded File 'Data/Scripts/ByteCode/PS005.bin'
+RSDKv3.html:1 Loaded File 'Data/Scripts/ByteCode/PS005.bin'
+RSDKv3.html:1 Loaded File 'Data/Scripts/ByteCode/PS005.bin'
+RSDKv3.html:1 Loaded File 'Data/Stages/DAgdn/16x16Tiles.gif'
+RSDKv3.html:1 Loaded File 'Data/Stages/DAgdn/16x16Tiles.gif'
+RSDKv3.html:1 Loaded File 'Data/Stages/DAgdn/16x16Tiles.gif'
+RSDKv3.html:1 Loaded File 'Data/Stages/DAgdn/16x16Tiles.gif'
+RSDKv3.html:1 Loaded File 'Data/Stages/DAgdn/CollisionMasks.bin'
+RSDKv3.html:1 Loaded File 'Data/Stages/DAgdn/CollisionMasks.bin'
+RSDKv3.html:1 Loaded File 'Data/Stages/DAgdn/Backgrounds.bin'
+RSDKv3.html:1 Loaded File 'Data/Stages/DAgdn/Backgrounds.bin'
+RSDKv3.html:1 Loaded File 'Data/Stages/DAgdn/128x128Tiles.bin'
+RSDKv3.html:1 Loaded File 'Data/Stages/DAgdn/128x128Tiles.bin'
+RSDKv3.html:1 Loaded File 'Data/Stages/DAgdn/Act1.bin'
+RSDKv3.html:1 Loaded File 'Data/Stages/DAgdn/Act1.bin'
+RSDKv3.html:1 Loaded File 'Data/Sprites/DAGarden/Objects.gif'
+RSDKv3.html:1 Loaded File 'Data/Sprites/DAGarden/Objects.gif'
+RSDKv3.html:1 Loaded File 'Data/Sprites/DAGarden/LittlePlanet.gif'
+RSDKv3.html:1 Loaded File 'Data/Sprites/DAGarden/LittlePlanet.gif'
+RSDKv3.html:1 Loaded File 'Data/Music/JP/DAGarden.ogg'
+RSDKv3.html:1 Loaded File 'Data/Music/JP/DAGarden.ogg'

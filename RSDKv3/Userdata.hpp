@@ -76,9 +76,11 @@ bool ReadSaveRAMData();
 bool WriteSaveRAMData();
 
 void InitUserdata();
+void LoadUserdata();
 void WriteSettings();
 void ReadUserdata();
 void WriteUserdata();
+void FlushWebStorage();
 
 void AwardAchievement(int id, int status);
 void SetAchievement(int achievementID, int achievementDone);

@@ -9,6 +9,7 @@ option(RETRO_MOD_LOADER "Enables or disables the mod loader." ON)
 option(RETRO_USE_HW_RENDER "Enables usage of Hardware Render as an option." ON)
 option(RETRO_DISABLE_PLUS "Disables Plus. Should be set on for any public releases." OFF)
 option(RETRO_ORIGINAL_CODE "Removes any change that differs from the original code, a playable game can't be built this way." OFF)
+option(RETRO_DEBUG "Enables debug features like the dev menu and logs." OFF)
 
 set(RETRO_SDL_VERSION 2 CACHE STRING "select between SDL2 and SDL1, defaults to SDL2")
 
@@ -49,8 +50,14 @@ set(RETRO_FILES
     RSDKv3/Video.cpp
 )
 
+if(EMSCRIPTEN)
+    list(REMOVE_ITEM RETRO_FILES dependencies/all/theoraplay/theoraplay.c)
+endif()
+
 if(NOT PLATFORM)
-    if(WIN32) # THIS ASSUMES VCPKG OR SOURCES !!!!!!!
+    if(EMSCRIPTEN)
+        set(PLATFORM "Emscripten" CACHE STRING "The platform to compile for.")
+    elseif(WIN32) # THIS ASSUMES VCPKG OR SOURCES !!!!!!!
         set(PLATFORM "Windows" CACHE STRING "The platform to compile for.")
     elseif(ANDROID)
         set(PLATFORM "Android" CACHE STRING "The platform to compile for.")
@@ -180,6 +187,10 @@ target_compile_definitions(RetroEngine PRIVATE
     RETRO_USE_SDL${RETRO_SDL_VERSION}=1
     FORCE_CASE_INSENSITIVE=$<BOOL:${RETRO_FORCE_CASE_INSENSITIVE}>
     RETRO_USE_ORIGINAL_CODE=$<BOOL:${RETRO_ORIGINAL_CODE}>
+    RETRO_DEBUG_MODE=$<BOOL:${RETRO_DEBUG}>
+    RETRO_DEBUG=$<BOOL:${RETRO_DEBUG}>
+    DEBUG=$<BOOL:${RETRO_DEBUG}>
+    _DEBUG=$<BOOL:${RETRO_DEBUG}>
     
     RSDK_AUTOBUILD=$<BOOL:${RETRO_DISABLE_PLUS}>
     

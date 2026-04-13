@@ -33,6 +33,7 @@ bool CheckRSDKFile(const char *filePath)
 #else
     sprintf(filePathBuffer, "%s", filePath);
 #endif
+    PrintLog("CheckRSDKFile: Raw filePath='%s', processed='%s'", filePath, filePathBuffer);
 
     Engine.usingDataFile = false;
 #if !RETRO_USE_ORIGINAL_CODE
@@ -42,7 +43,9 @@ bool CheckRSDKFile(const char *filePath)
     Engine.usingBytecode = false;
 
     cFileHandle = fOpen(filePathBuffer, "rb");
+    PrintLog("Checking RSDK file: %s (handle: %p)", filePathBuffer, cFileHandle);
     if (cFileHandle) {
+        PrintLog("RSDK file opened successfully");
         Engine.usingDataFile = true;
 #if !RETRO_USE_ORIGINAL_CODE
         Engine.usingDataFile_Config = true;
@@ -64,6 +67,7 @@ bool CheckRSDKFile(const char *filePath)
         return true;
     }
     else {
+        PrintLog("RSDK file open FAILED");
         Engine.usingDataFile = false;
 #if !RETRO_USE_ORIGINAL_CODE
         Engine.usingDataFile_Config = false;

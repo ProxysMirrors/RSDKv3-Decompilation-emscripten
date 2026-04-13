@@ -11,8 +11,14 @@
 
 #if RETRO_USING_SDL1 || RETRO_USING_SDL2
 
+#if RETRO_USING_SDL2
+extern SDL_AudioDeviceID audioDevice;
+#define LockAudioDevice()   SDL_LockAudioDevice(audioDevice)
+#define UnlockAudioDevice() SDL_UnlockAudioDevice(audioDevice)
+#else
 #define LockAudioDevice()   SDL_LockAudio()
 #define UnlockAudioDevice() SDL_UnlockAudio()
+#endif
 
 #else
 #define LockAudioDevice()   ;
@@ -150,6 +156,13 @@ void SetSfxName(const char *sfxName, int sfxID, bool global);
 void LoadMusic();
 void SetMusicTrack(char *filePath, byte trackID, bool loop, uint loopPoint);
 bool PlayMusic(int track);
+#if RETRO_PLATFORM == RETRO_WEB
+extern "C" {
+#endif
+void TryResumeAudioDevice();
+#if RETRO_PLATFORM == RETRO_WEB
+}
+#endif
 inline void StopMusic()
 {
     musicStatus = MUSIC_STOPPED;

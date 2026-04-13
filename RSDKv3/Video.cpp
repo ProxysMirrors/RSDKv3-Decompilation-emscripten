@@ -1,6 +1,124 @@
 #include "RetroEngine.hpp"
 #include <string>
 
+#if RETRO_PLATFORM == RETRO_WEB
+#include <emscripten/emscripten.h>
+
+int currentVideoFrame = 0;
+int videoFrameCount   = 0;
+int videoWidth        = 0;
+int videoHeight       = 0;
+float videoAR         = 0;
+byte videoSurface     = 0;
+int videoFilePos      = 0;
+int videoPlaying      = 0;
+int vidFrameMS        = 0;
+int vidBaseticks      = 0;
+bool videoSkipped     = false;
+
+void PlayVideoFile(char *filePath)
+{
+    char pathBuffer[0x100];
+    int len = StrLength(filePath);
+
+    if (StrComp(filePath + ((size_t)len - 2), "us")) {
+        filePath[len - 2] = 0;
+    }
+
+    int track = GetGlobalVariableByName("Options.Soundtrack");
+
+    // Order: 1. Suffixed (.mp4), 2. Normal (.mp4), 3. Suffixed (.ogv), 4. Normal (.ogv)
+    bool found = false;
+    
+    // Try MP4 variants
+    const char* suffix = (track == 1) ? "_US" : "_JP";
+    StrCopy(pathBuffer, "videos/");
+    StrAdd(pathBuffer, filePath);
+    StrAdd(pathBuffer, suffix);
+    StrAdd(pathBuffer, ".mp4");
+    FileIO *file = fOpen(pathBuffer, "rb");
+    
+    if (!file) {
+        StrCopy(pathBuffer, "videos/");
+        StrAdd(pathBuffer, filePath);
+        StrAdd(pathBuffer, ".mp4");
+        file = fOpen(pathBuffer, "rb");
+    }
+
+    // Try OGV variants if MP4 fails
+    if (!file) {
+        StrCopy(pathBuffer, "videos/");
+        StrAdd(pathBuffer, filePath);
+        StrAdd(pathBuffer, suffix);
+        StrAdd(pathBuffer, ".ogv");
+        file = fOpen(pathBuffer, "rb");
+    }
+
+    if (!file) {
+        StrCopy(pathBuffer, "videos/");
+        StrAdd(pathBuffer, filePath);
+        StrAdd(pathBuffer, ".ogv");
+        file = fOpen(pathBuffer, "rb");
+    }
+
+    if (file) {
+        fClose(file);
+        
+        // Tell JS to start decoding into our native overlay
+        EM_ASM({
+            var path = UTF8ToString($0);
+            var track = $1;
+            Module.rsdkInitEngineVideo(path, track);
+        }, pathBuffer, track);
+
+        videoPlaying    = 1;
+        videoSkipped    = false;
+        Engine.gameMode = ENGINE_VIDEOWAIT;
+    }
+    else {
+        PrintLog("Couldn't find video file '%s'!", filePath);
+        Engine.gameMode = ENGINE_MAINGAME;
+    }
+}
+
+void UpdateVideoFrame() {}
+
+int ProcessVideo()
+{
+    if (videoPlaying == 1) {
+        CheckKeyPress(&keyPress, 0xFF);
+
+        bool skip = (anyPress || touches > 0);
+        
+        // JS will check if video is done or skip requested
+        int status = EM_ASM_INT({
+            return Module.rsdkUpdateEngineVideo($0);
+        }, skip);
+
+        if (status == 0) { // Finished or skipped
+            StopVideoPlayback();
+            ResumeSound();
+            return 1; 
+        }
+
+        return 2; // Playing
+    }
+    return 0;
+}
+
+void StopVideoPlayback()
+{
+    if (videoPlaying == 1) {
+        EM_ASM({ Module.rsdkStopEngineVideo(); });
+        videoPlaying = 0;
+    }
+}
+
+void SetupVideoBuffer(int width, int height) {}
+void CloseVideoBuffer() {}
+
+#else
+
 int currentVideoFrame = 0;
 int videoFrameCount   = 0;
 int videoWidth        = 0;
@@ -117,23 +235,27 @@ void PlayVideoFile(char *filePath)
             PrintLog("Video Decoder Error!");
             return;
         }
+#if RETRO_PLATFORM != RETRO_WEB
         while (!videoVidData) {
             if (!videoVidData)
                 videoVidData = THEORAPLAY_getVideo(videoDecoder);
         }
-        if (!videoVidData) {
-            PrintLog("Video Error!");
-            return;
+#else
+        videoVidData = THEORAPLAY_getVideo(videoDecoder);
+#endif
+        if (videoVidData) {
+            videoWidth  = videoVidData->width;
+            videoHeight = videoVidData->height;
+            videoAR     = float(videoWidth) / float(videoHeight);
+            SetupVideoBuffer(videoWidth, videoHeight);
         }
-
-        videoWidth  = videoVidData->width;
-        videoHeight = videoVidData->height;
-        // commit video Aspect Ratio.
-        videoAR = float(videoWidth) / float(videoHeight);
-
-        SetupVideoBuffer(videoWidth, videoHeight);
+        else {
+            videoWidth  = 0;
+            videoHeight = 0;
+            videoAR     = 0.0f;
+        }
         vidBaseticks = SDL_GetTicks();
-        vidFrameMS   = (videoVidData->fps == 0.0) ? 0 : ((Uint32)(1000.0 / videoVidData->fps));
+        vidFrameMS   = (videoVidData && videoVidData->fps != 0.0) ? ((Uint32)(1000.0 / videoVidData->fps)) : 0;
         videoPlaying = 1; // playing ogv
         trackID      = TRACK_COUNT - 1;
 
@@ -204,6 +326,7 @@ int ProcessVideo()
 {
     if (videoPlaying == 1) {
         CheckKeyPress(&keyPress, 0xFF);
+        TryResumeAudioDevice();
 
         if (videoSkipped && fadeMode < 0xFF) {
             fadeMode += 8;
@@ -226,8 +349,19 @@ int ProcessVideo()
         if (videoPlaying == 1) {
             const Uint32 now = (SDL_GetTicks() - vidBaseticks);
 
-            if (!videoVidData)
+            if (!videoVidData) {
+                LockAudioDevice();
                 videoVidData = THEORAPLAY_getVideo(videoDecoder);
+                UnlockAudioDevice();
+            }
+
+            if (videoVidData && videoWidth == 0) {
+                videoWidth  = videoVidData->width;
+                videoHeight = videoVidData->height;
+                videoAR     = float(videoWidth) / float(videoHeight);
+                SetupVideoBuffer(videoWidth, videoHeight);
+                vidFrameMS = (videoVidData->fps == 0.0) ? 0 : ((Uint32)(1000.0 / videoVidData->fps));
+            }
 
             // Play video frames when it's time.
             if (videoVidData && (videoVidData->playms <= now)) {
@@ -239,39 +373,42 @@ int ProcessVideo()
                     //  more.
 
                     const THEORAPLAY_VideoFrame *last = videoVidData;
+                    LockAudioDevice();
                     while ((videoVidData = THEORAPLAY_getVideo(videoDecoder)) != NULL) {
                         THEORAPLAY_freeVideo(last);
                         last = videoVidData;
                         if ((now - videoVidData->playms) < vidFrameMS)
                             break;
                     }
+                    UnlockAudioDevice();
 
                     if (!videoVidData)
                         videoVidData = last;
                 }
 
                 // do nothing; we're far behind and out of options.
-                if (!videoVidData) {
-                    // video lagging uh oh
-                }
-
+                if (videoVidData) {
 #if RETRO_USING_OPENGL
-                glBindTexture(GL_TEXTURE_2D, videoBuffer);
-                glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, videoVidData->width, videoVidData->height, GL_RGBA, GL_UNSIGNED_BYTE, videoVidData->pixels);
-                glBindTexture(GL_TEXTURE_2D, 0);
+                    glBindTexture(GL_TEXTURE_2D, videoBuffer);
+                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, videoVidData->width, videoVidData->height, GL_RGBA, GL_UNSIGNED_BYTE,
+                                    videoVidData->pixels);
+                    glBindTexture(GL_TEXTURE_2D, 0);
 #elif RETRO_USING_SDL2
-                int half_w     = videoVidData->width / 2;
-                const Uint8 *y = (const Uint8 *)videoVidData->pixels;
-                const Uint8 *u = y + (videoVidData->width * videoVidData->height);
-                const Uint8 *v = u + (half_w * (videoVidData->height / 2));
+                    int half_w     = videoVidData->width / 2;
+                    const Uint8 *y = (const Uint8 *)videoVidData->pixels;
+                    const Uint8 *u = y + (videoVidData->width * videoVidData->height);
+                    const Uint8 *v = u + (half_w * (videoVidData->height / 2));
 
-                SDL_UpdateYUVTexture(Engine.videoBuffer, NULL, y, videoVidData->width, u, half_w, v, half_w);
+                    SDL_UpdateYUVTexture(Engine.videoBuffer, NULL, y, videoVidData->width, u, half_w, v, half_w);
 #elif RETRO_USING_SDL1
-                memcpy(Engine.videoBuffer->pixels, videoVidData->pixels, videoVidData->width * videoVidData->height * sizeof(uint));
+                    memcpy(Engine.videoBuffer->pixels, videoVidData->pixels, videoVidData->width * videoVidData->height * sizeof(uint));
 #endif
 
-                THEORAPLAY_freeVideo(videoVidData);
-                videoVidData = NULL;
+                    LockAudioDevice();
+                    THEORAPLAY_freeVideo(videoVidData);
+                    videoVidData = NULL;
+                    UnlockAudioDevice();
+                }
             }
 
             return 2; // its playing as expected
@@ -287,7 +424,7 @@ void StopVideoPlayback()
         // `videoPlaying` and `videoDecoder` are read by
         // the audio thread, so lock it to prevent a race
         // condition that results in invalid memory accesses.
-        SDL_LockAudio();
+        LockAudioDevice();
 
         if (videoSkipped && fadeMode >= 0xFF)
             fadeMode = 0;
@@ -304,7 +441,7 @@ void StopVideoPlayback()
         CloseVideoBuffer();
         videoPlaying = 0;
 
-        SDL_UnlockAudio();
+        UnlockAudioDevice();
     }
 }
 
@@ -356,3 +493,5 @@ void CloseVideoBuffer()
 #endif
     }
 }
+
+#endif

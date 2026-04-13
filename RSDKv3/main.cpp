@@ -54,7 +54,9 @@ int main(int argc, char *argv[])
     parseArguments(argc, argv);
 #endif
 
+#if RETRO_PLATFORM != RETRO_WEB
     Engine.Init();
+#endif
     Engine.Run();
 
 #if !RETRO_USE_ORIGINAL_CODE

@@ -1,4 +1,7 @@
 #include "RetroEngine.hpp"
+#if RETRO_PLATFORM == RETRO_WEB
+#include <emscripten/emscripten.h>
+#endif
 #if !RETRO_USE_ORIGINAL_CODE
 #include <stdlib.h>
 #include <algorithm>
@@ -360,5 +363,8 @@ void IniParser::Write(const char *filename, bool addPath)
     }
 
     fClose(f);
+#if RETRO_PLATFORM == RETRO_WEB
+    FlushWebStorage();
+#endif
 }
 #endif

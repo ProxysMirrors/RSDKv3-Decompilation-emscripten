@@ -1,0 +1,105 @@
+#include "RetroEngine.hpp"
+#include <string>
+
+#if RETRO_PLATFORM == RETRO_WEB
+#include <emscripten/emscripten.h>
+
+int currentVideoFrame = 0;
+int videoFrameCount   = 0;
+int videoWidth        = 0;
+int videoHeight       = 0;
+float videoAR         = 0;
+byte videoSurface     = 0;
+int videoFilePos      = 0;
+int videoPlaying      = 0;
+int vidFrameMS        = 0;
+int vidBaseticks      = 0;
+bool videoSkipped     = false;
+
+void PlayVideoFile(char *filePath)
+{
+    char pathBuffer[0x100];
+    int len = StrLength(filePath);
+
+    if (StrComp(filePath + ((size_t)len - 2), "us")) {
+        filePath[len - 2] = 0;
+    }
+
+    // Try mp4 first, then ogv
+    StrCopy(pathBuffer, "Data/Video/");
+    StrAdd(pathBuffer, filePath);
+    StrAdd(pathBuffer, ".mp4");
+
+    FileIO *file = fOpen(pathBuffer, "rb");
+    if (!file) {
+        StrCopy(pathBuffer, "Data/Video/");
+        StrAdd(pathBuffer, filePath);
+        StrAdd(pathBuffer, ".ogv");
+        file = fOpen(pathBuffer, "rb");
+    }
+
+    if (file) {
+        fClose(file);
+        
+        // Tell JS to start decoding into our native overlay
+        EM_ASM({
+            var path = UTF8ToString($0);
+            Module.rsdkInitEngineVideo(path);
+        }, pathBuffer);
+
+        videoPlaying    = 1;
+        videoSkipped    = false;
+        Engine.gameMode = ENGINE_VIDEOWAIT;
+    }
+    else {
+        PrintLog("Couldn't find video file '%s'!", filePath);
+        Engine.gameMode = ENGINE_MAINGAME;
+    }
+}
+
+void UpdateVideoFrame() {}
+
+int ProcessVideo()
+{
+    if (videoPlaying == 1) {
+        CheckKeyPress(&keyPress, 0xFF);
+        TryResumeAudioDevice();
+
+        bool skip = (anyPress || touches > 0);
+        
+        // JS will check if video is done or skip requested
+        int status = EM_ASM_INT({
+            return Module.rsdkUpdateEngineVideo($0);
+        }, skip);
+
+        if (status == 0) { // Finished or skipped
+            StopVideoPlayback();
+            ResumeSound();
+            return 1; 
+        }
+
+        return 2; // Playing
+    }
+    return 0;
+}
+
+void StopVideoPlayback()
+{
+    if (videoPlaying == 1) {
+        EM_ASM({ Module.rsdkStopEngineVideo(); });
+        videoPlaying = 0;
+    }
+}
+
+void SetupVideoBuffer(int width, int height)
+{
+    // No longer needed for native overlay
+}
+
+void CloseVideoBuffer()
+{
+    // No longer needed for native overlay
+}
+
+#else
+// ... existing non-web implementation ...

@@ -150,7 +150,7 @@ int InitRenderDevice()
     Engine.window = SDL_CreateWindow(gameTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_XSIZE * Engine.windowScale,
                                      SCREEN_YSIZE * Engine.windowScale, SDL_WINDOW_ALLOW_HIGHDPI | flags);
 #if !RETRO_USING_OPENGL
-    Engine.renderer = SDL_CreateRenderer(Engine.window, -1, SDL_RENDERER_ACCELERATED);
+    Engine.renderer = SDL_CreateRenderer(Engine.window, -1, SDL_RENDERER_ACCELERATED | (Engine.vsync ? SDL_RENDERER_PRESENTVSYNC : 0));
 #endif
 
     if (!Engine.window) {
@@ -264,7 +264,7 @@ int InitRenderDevice()
 
     SDL_GL_SetSwapInterval(Engine.vsync ? 1 : 0);
 
-#if RETRO_PLATFORM != RETRO_ANDROID && RETRO_PLATFORM != RETRO_OSX
+#if RETRO_PLATFORM != RETRO_ANDROID && RETRO_PLATFORM != RETRO_OSX && RETRO_PLATFORM != RETRO_WEB
     // glew Setup
     GLenum err = glewInit();
     if (err != GLEW_OK && err != GLEW_ERROR_NO_GLX_DISPLAY) {
@@ -1051,9 +1051,77 @@ void ReleaseRenderDevice()
 #endif
 }
 
+#if RETRO_PLATFORM == RETRO_WEB
+#include <emscripten/emscripten.h>
+#endif
+
+#if RETRO_PLATFORM == RETRO_WEB
+extern "C" EMSCRIPTEN_KEEPALIVE void RefreshWindow()
+#else
+void RefreshWindow()
+#endif
+{
+    float width = SCREEN_XSIZE, height = SCREEN_YSIZE;
+    int winW = 0, winH = 0;
+
+#if RETRO_USING_SDL2
+    if (Engine.isFullScreen) {
+        SDL_DisplayMode mode;
+        SDL_GetDesktopDisplayMode(0, &mode);
+        winW = mode.w;
+        winH = mode.h;
+        if (mode.h > mode.w) {
+            winW = mode.h;
+            winH = mode.w;
+        }
+    }
+    else {
+        SDL_GetWindowSize(Engine.window, &winW, &winH);
+    }
+
+#if RETRO_USING_OPENGL
+    int drawW = 0, drawH = 0;
+    SDL_GL_GetDrawableSize(Engine.window, &drawW, &drawH);
+    if (drawW > 0 && drawH > 0) {
+        winW = drawW;
+        winH = drawH;
+    }
+#endif
+
+    float scaleH        = (winH / (float)SCREEN_YSIZE);
+    Engine.useFBTexture = ((float)scaleH - (int)scaleH) != 0 || Engine.scalingMode;
+
+    if (Engine.useFBTexture) {
+        width  = scaleH * (float)SCREEN_XSIZE;
+        height = winH;
+
+        if (width > winW) {
+            width        = winW;
+            float scaleW = winW / (float)SCREEN_XSIZE;
+            height       = scaleW * (float)SCREEN_YSIZE;
+
+            viewOffsetX = 0;
+            viewOffsetY = abs(winH - (int)height) / 2;
+        }
+        else {
+            viewOffsetX = abs(winW - (int)width) / 2;
+            viewOffsetY = 0;
+        }
+    }
+    else {
+        width       = winW;
+        height      = winH;
+        viewOffsetX = 0;
+        viewOffsetY = 0;
+    }
+
+    SetScreenDimensions(SCREEN_XSIZE, SCREEN_YSIZE, (int)width, (int)height);
+#endif
+}
+
 void SetFullScreen(bool fs)
 {
-
+    Engine.isFullScreen = fs;
     if (fs) {
 #if RETRO_USING_SDL1
         Engine.windowSurface =
@@ -1064,76 +1132,22 @@ void SetFullScreen(bool fs)
         SDL_RestoreWindow(Engine.window);
         SDL_SetWindowFullscreen(Engine.window, SDL_WINDOW_FULLSCREEN_DESKTOP);
 #endif
-        SDL_DisplayMode mode;
-        SDL_GetDesktopDisplayMode(0, &mode);
-
-        int w = mode.w;
-        int h = mode.h;
-        if (mode.h > mode.w) {
-            w = mode.h;
-            h = mode.w;
-        }
-
-        float scaleH        = (mode.h / (float)SCREEN_YSIZE);
-        Engine.useFBTexture = ((float)scaleH - (int)scaleH) != 0 || Engine.scalingMode;
-
-        float width = w, height = h;
-#if RETRO_PLATFORM != RETRO_iOS && RETRO_PLATFORM != RETRO_ANDROID
-        int winW = 0, winH = 0;
-#if RETRO_USING_OPENGL
-        SDL_GL_GetDrawableSize(Engine.window, &winW, &winH);
-#else
-        SDL_GetRendererOutputSize(Engine.renderer, &winW, &winH);
-#endif
-
-        scaleH       = winH / (float)SCREEN_YSIZE;
-
-        width        = scaleH * (float)SCREEN_XSIZE;
-        height       = winH;
-
-        if (width > winW) {
-            width = winW;
-
-            float scaleW = winW / (float)SCREEN_XSIZE;
-            height = scaleW * (float)SCREEN_YSIZE;
-
-            viewOffsetX = 0;
-            viewOffsetY = abs(winH - height) / 2;
-        }
-        else {
-            viewOffsetX = abs(winW - width) / 2;
-            viewOffsetY = 0;
-        }
-
-#else
-        viewOffsetX = 0;
-        viewOffsetY = 0;
-#endif
-
-        SetScreenDimensions(SCREEN_XSIZE, SCREEN_YSIZE, width, height);
     }
     else {
-        viewOffsetX = 0;
-        viewOffsetY = 0;
 #if RETRO_USING_SDL1
         Engine.windowSurface = SDL_SetVideoMode(SCREEN_XSIZE * Engine.windowScale, SCREEN_YSIZE * Engine.windowScale, 16, SDL_SWSURFACE);
         SDL_ShowCursor(SDL_TRUE);
 #endif
-        Engine.useFBTexture = Engine.scalingMode;
 #if RETRO_USING_SDL2
         SDL_SetWindowFullscreen(Engine.window, SDL_FALSE);
         SDL_SetWindowSize(Engine.window, SCREEN_XSIZE_CONFIG * Engine.windowScale, SCREEN_YSIZE * Engine.windowScale);
+#if RETRO_PLATFORM != RETRO_WEB
         SDL_SetWindowPosition(Engine.window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
-        SDL_RestoreWindow(Engine.window);
-#if RETRO_USING_OPENGL
-        int drawableWidth, drawableHeight;
-        SDL_GL_GetDrawableSize(Engine.window, &drawableWidth, &drawableHeight);
-        SetScreenDimensions(SCREEN_XSIZE, SCREEN_YSIZE, drawableWidth, drawableHeight);
-#else
-        SetScreenDimensions(SCREEN_XSIZE, SCREEN_YSIZE, SCREEN_XSIZE * Engine.windowScale, SCREEN_YSIZE * Engine.windowScale);
 #endif
+        SDL_RestoreWindow(Engine.window);
 #endif
     }
+    RefreshWindow();
 }
 
 void GenerateBlendLookupTable()
@@ -2759,7 +2773,7 @@ void DrawHLineScrollLayer(int layerID)
                                 gfxPolyList[gfxVertexSize].colour.a = 0xFF;
                                 gfxVertexSize++;
 
-                                gfxPolyList[gfxVertexSize].x = deformX1 + (CHUNK_SIZE * 2);
+                                gfxPolyList[gfxVertexSize].x = deformX1 + (CHUNK_SIZE * 2) + 1;
                                 gfxPolyList[gfxVertexSize].y = deformY;
                                 gfxPolyList[gfxVertexSize].u = tileUVArray[tiles128x128.gfxDataPos[gfxIndex] + tileGFXPos];
                                 tileGFXPos++;
@@ -2771,7 +2785,7 @@ void DrawHLineScrollLayer(int layerID)
                                 gfxVertexSize++;
 
                                 gfxPolyList[gfxVertexSize].x        = deformX2;
-                                gfxPolyList[gfxVertexSize].y        = deformY + CHUNK_SIZE;
+                                gfxPolyList[gfxVertexSize].y        = deformY + CHUNK_SIZE + 1;
                                 gfxPolyList[gfxVertexSize].u        = gfxPolyList[gfxVertexSize - 2].u;
                                 gfxPolyList[gfxVertexSize].v        = tileUVArray[tiles128x128.gfxDataPos[gfxIndex] + tileGFXPos] - 8;
                                 gfxPolyList[gfxVertexSize].colour.r = 0xFF;
@@ -2780,7 +2794,7 @@ void DrawHLineScrollLayer(int layerID)
                                 gfxPolyList[gfxVertexSize].colour.a = 0xFF;
                                 gfxVertexSize++;
 
-                                gfxPolyList[gfxVertexSize].x        = deformX2 + (CHUNK_SIZE * 2);
+                                gfxPolyList[gfxVertexSize].x        = deformX2 + (CHUNK_SIZE * 2) + 1;
                                 gfxPolyList[gfxVertexSize].y        = gfxPolyList[gfxVertexSize - 1].y;
                                 gfxPolyList[gfxVertexSize].u        = gfxPolyList[gfxVertexSize - 2].u;
                                 gfxPolyList[gfxVertexSize].v        = gfxPolyList[gfxVertexSize - 1].v;
@@ -2794,7 +2808,7 @@ void DrawHLineScrollLayer(int layerID)
                                 break;
                             }
                             case FLIP_X: {
-                                gfxPolyList[gfxVertexSize].x = deformX1 + (CHUNK_SIZE * 2);
+                                gfxPolyList[gfxVertexSize].x = deformX1 + (CHUNK_SIZE * 2) + 1;
                                 gfxPolyList[gfxVertexSize].y = deformY;
                                 gfxPolyList[gfxVertexSize].u = tileUVArray[tiles128x128.gfxDataPos[gfxIndex] + tileGFXPos];
                                 tileGFXPos++;
@@ -2817,8 +2831,8 @@ void DrawHLineScrollLayer(int layerID)
                                 gfxPolyList[gfxVertexSize].colour.a = 0xFF;
                                 gfxVertexSize++;
 
-                                gfxPolyList[gfxVertexSize].x        = deformX2 + (CHUNK_SIZE * 2);
-                                gfxPolyList[gfxVertexSize].y        = deformY + CHUNK_SIZE;
+                                gfxPolyList[gfxVertexSize].x        = deformX2 + (CHUNK_SIZE * 2) + 1;
+                                gfxPolyList[gfxVertexSize].y        = deformY + CHUNK_SIZE + 1;
                                 gfxPolyList[gfxVertexSize].u        = gfxPolyList[gfxVertexSize - 2].u;
                                 gfxPolyList[gfxVertexSize].v        = tileUVArray[tiles128x128.gfxDataPos[gfxIndex] + tileGFXPos] - 8;
                                 gfxPolyList[gfxVertexSize].colour.r = 0xFF;
@@ -2842,7 +2856,7 @@ void DrawHLineScrollLayer(int layerID)
                             }
                             case FLIP_Y: {
                                 gfxPolyList[gfxVertexSize].x = deformX2;
-                                gfxPolyList[gfxVertexSize].y = deformY + CHUNK_SIZE;
+                                gfxPolyList[gfxVertexSize].y = deformY + CHUNK_SIZE + 1;
                                 gfxPolyList[gfxVertexSize].u = tileUVArray[tiles128x128.gfxDataPos[gfxIndex] + tileGFXPos];
                                 tileGFXPos++;
                                 gfxPolyList[gfxVertexSize].v = tileUVArray[tiles128x128.gfxDataPos[gfxIndex] + tileGFXPos] + 8;
@@ -2854,7 +2868,7 @@ void DrawHLineScrollLayer(int layerID)
                                 gfxVertexSize++;
 
                                 gfxPolyList[gfxVertexSize].x = deformX2 + (CHUNK_SIZE * 2);
-                                gfxPolyList[gfxVertexSize].y = deformY + CHUNK_SIZE;
+                                gfxPolyList[gfxVertexSize].y = deformY + CHUNK_SIZE + 1;
                                 gfxPolyList[gfxVertexSize].u = tileUVArray[tiles128x128.gfxDataPos[gfxIndex] + tileGFXPos];
                                 tileGFXPos++;
                                 gfxPolyList[gfxVertexSize].v        = gfxPolyList[gfxVertexSize - 1].v;
@@ -2889,7 +2903,7 @@ void DrawHLineScrollLayer(int layerID)
                             }
                             case FLIP_XY: {
                                 gfxPolyList[gfxVertexSize].x = deformX2 + (CHUNK_SIZE * 2);
-                                gfxPolyList[gfxVertexSize].y = deformY + CHUNK_SIZE;
+                                gfxPolyList[gfxVertexSize].y = deformY + CHUNK_SIZE + 1;
                                 gfxPolyList[gfxVertexSize].u = tileUVArray[tiles128x128.gfxDataPos[gfxIndex] + tileGFXPos];
                                 tileGFXPos++;
                                 gfxPolyList[gfxVertexSize].v = tileUVArray[tiles128x128.gfxDataPos[gfxIndex] + tileGFXPos] + 8;
@@ -2901,7 +2915,7 @@ void DrawHLineScrollLayer(int layerID)
                                 gfxVertexSize++;
 
                                 gfxPolyList[gfxVertexSize].x = deformX2;
-                                gfxPolyList[gfxVertexSize].y = deformY + CHUNK_SIZE;
+                                gfxPolyList[gfxVertexSize].y = deformY + CHUNK_SIZE + 1;
                                 gfxPolyList[gfxVertexSize].u = tileUVArray[tiles128x128.gfxDataPos[gfxIndex] + tileGFXPos];
                                 tileGFXPos++;
                                 gfxPolyList[gfxVertexSize].v        = gfxPolyList[gfxVertexSize - 1].v;
@@ -2995,7 +3009,7 @@ void DrawHLineScrollLayer(int layerID)
                                 gfxPolyList[gfxVertexSize].colour.a = 0xFF;
                                 gfxVertexSize++;
 
-                                gfxPolyList[gfxVertexSize].x = deformX1 + (CHUNK_SIZE * 2);
+                                gfxPolyList[gfxVertexSize].x = deformX1 + (CHUNK_SIZE * 2) + 1;
                                 gfxPolyList[gfxVertexSize].y = deformY;
                                 gfxPolyList[gfxVertexSize].u = tileUVArray[tiles128x128.gfxDataPos[gfxIndex] + tileGFXPos];
                                 tileGFXPos++;
@@ -3007,7 +3021,7 @@ void DrawHLineScrollLayer(int layerID)
                                 gfxVertexSize++;
 
                                 gfxPolyList[gfxVertexSize].x        = deformX2;
-                                gfxPolyList[gfxVertexSize].y        = deformY + CHUNK_SIZE;
+                                gfxPolyList[gfxVertexSize].y        = deformY + CHUNK_SIZE + 1;
                                 gfxPolyList[gfxVertexSize].u        = gfxPolyList[gfxVertexSize - 2].u;
                                 gfxPolyList[gfxVertexSize].v        = tileUVArray[tiles128x128.gfxDataPos[gfxIndex] + tileGFXPos];
                                 gfxPolyList[gfxVertexSize].colour.r = 0xFF;
@@ -3016,7 +3030,7 @@ void DrawHLineScrollLayer(int layerID)
                                 gfxPolyList[gfxVertexSize].colour.a = 0xFF;
                                 gfxVertexSize++;
 
-                                gfxPolyList[gfxVertexSize].x        = deformX2 + (CHUNK_SIZE * 2);
+                                gfxPolyList[gfxVertexSize].x        = deformX2 + (CHUNK_SIZE * 2) + 1;
                                 gfxPolyList[gfxVertexSize].y        = gfxPolyList[gfxVertexSize - 1].y;
                                 gfxPolyList[gfxVertexSize].u        = gfxPolyList[gfxVertexSize - 2].u;
                                 gfxPolyList[gfxVertexSize].v        = gfxPolyList[gfxVertexSize - 1].v;
@@ -3030,7 +3044,7 @@ void DrawHLineScrollLayer(int layerID)
                                 break;
                             }
                             case FLIP_X: {
-                                gfxPolyList[gfxVertexSize].x = deformX1 + (CHUNK_SIZE * 2);
+                                gfxPolyList[gfxVertexSize].x = deformX1 + (CHUNK_SIZE * 2) + 1;
                                 gfxPolyList[gfxVertexSize].y = deformY;
                                 gfxPolyList[gfxVertexSize].u = tileUVArray[tiles128x128.gfxDataPos[gfxIndex] + tileGFXPos];
                                 tileGFXPos++;
@@ -3053,8 +3067,8 @@ void DrawHLineScrollLayer(int layerID)
                                 gfxPolyList[gfxVertexSize].colour.a = 0xFF;
                                 gfxVertexSize++;
 
-                                gfxPolyList[gfxVertexSize].x        = deformX2 + (CHUNK_SIZE * 2);
-                                gfxPolyList[gfxVertexSize].y        = deformY + CHUNK_SIZE;
+                                gfxPolyList[gfxVertexSize].x        = deformX2 + (CHUNK_SIZE * 2) + 1;
+                                gfxPolyList[gfxVertexSize].y        = deformY + CHUNK_SIZE + 1;
                                 gfxPolyList[gfxVertexSize].u        = gfxPolyList[gfxVertexSize - 2].u;
                                 gfxPolyList[gfxVertexSize].v        = tileUVArray[tiles128x128.gfxDataPos[gfxIndex] + tileGFXPos];
                                 gfxPolyList[gfxVertexSize].colour.r = 0xFF;
@@ -3078,7 +3092,7 @@ void DrawHLineScrollLayer(int layerID)
                             }
                             case FLIP_Y: {
                                 gfxPolyList[gfxVertexSize].x = deformX2;
-                                gfxPolyList[gfxVertexSize].y = deformY + CHUNK_SIZE;
+                                gfxPolyList[gfxVertexSize].y = deformY + CHUNK_SIZE + 1;
                                 gfxPolyList[gfxVertexSize].u = tileUVArray[tiles128x128.gfxDataPos[gfxIndex] + tileGFXPos];
                                 tileGFXPos++;
                                 gfxPolyList[gfxVertexSize].v = tileUVArray[tiles128x128.gfxDataPos[gfxIndex] + tileGFXPos];
@@ -3090,7 +3104,7 @@ void DrawHLineScrollLayer(int layerID)
                                 gfxVertexSize++;
 
                                 gfxPolyList[gfxVertexSize].x = deformX2 + (CHUNK_SIZE * 2);
-                                gfxPolyList[gfxVertexSize].y = deformY + CHUNK_SIZE;
+                                gfxPolyList[gfxVertexSize].y = deformY + CHUNK_SIZE + 1;
                                 gfxPolyList[gfxVertexSize].u = tileUVArray[tiles128x128.gfxDataPos[gfxIndex] + tileGFXPos];
                                 tileGFXPos++;
                                 gfxPolyList[gfxVertexSize].v        = gfxPolyList[gfxVertexSize - 1].v;
@@ -3125,7 +3139,7 @@ void DrawHLineScrollLayer(int layerID)
                             }
                             case FLIP_XY: {
                                 gfxPolyList[gfxVertexSize].x = deformX2 + (CHUNK_SIZE * 2);
-                                gfxPolyList[gfxVertexSize].y = deformY + CHUNK_SIZE;
+                                gfxPolyList[gfxVertexSize].y = deformY + CHUNK_SIZE + 1;
                                 gfxPolyList[gfxVertexSize].u = tileUVArray[tiles128x128.gfxDataPos[gfxIndex] + tileGFXPos];
                                 tileGFXPos++;
                                 gfxPolyList[gfxVertexSize].v = tileUVArray[tiles128x128.gfxDataPos[gfxIndex] + tileGFXPos];
@@ -3137,7 +3151,7 @@ void DrawHLineScrollLayer(int layerID)
                                 gfxVertexSize++;
 
                                 gfxPolyList[gfxVertexSize].x = deformX2;
-                                gfxPolyList[gfxVertexSize].y = deformY + CHUNK_SIZE;
+                                gfxPolyList[gfxVertexSize].y = deformY + CHUNK_SIZE + 1;
                                 gfxPolyList[gfxVertexSize].u = tileUVArray[tiles128x128.gfxDataPos[gfxIndex] + tileGFXPos];
                                 tileGFXPos++;
                                 gfxPolyList[gfxVertexSize].v        = gfxPolyList[gfxVertexSize - 1].v;
@@ -3233,7 +3247,7 @@ void DrawHLineScrollLayer(int layerID)
                                 gfxPolyList[gfxVertexSize].colour.a = 0xFF;
                                 gfxVertexSize++;
 
-                                gfxPolyList[gfxVertexSize].x = deformX1 + (CHUNK_SIZE * 2);
+                                gfxPolyList[gfxVertexSize].x = deformX1 + (CHUNK_SIZE * 2) + 1;
                                 gfxPolyList[gfxVertexSize].y = deformY;
                                 gfxPolyList[gfxVertexSize].u = tileUVArray[tiles128x128.gfxDataPos[gfxIndex] + tileGFXPos];
                                 tileGFXPos++;
@@ -3254,7 +3268,7 @@ void DrawHLineScrollLayer(int layerID)
                                 gfxPolyList[gfxVertexSize].colour.a = 0xFF;
                                 gfxVertexSize++;
 
-                                gfxPolyList[gfxVertexSize].x        = deformX2 + (CHUNK_SIZE * 2);
+                                gfxPolyList[gfxVertexSize].x        = deformX2 + (CHUNK_SIZE * 2) + 1;
                                 gfxPolyList[gfxVertexSize].y        = gfxPolyList[gfxVertexSize - 1].y;
                                 gfxPolyList[gfxVertexSize].u        = gfxPolyList[gfxVertexSize - 2].u;
                                 gfxPolyList[gfxVertexSize].v        = gfxPolyList[gfxVertexSize - 1].v;
@@ -3268,7 +3282,7 @@ void DrawHLineScrollLayer(int layerID)
                                 break;
                             }
                             case FLIP_X: {
-                                gfxPolyList[gfxVertexSize].x = deformX1 + (CHUNK_SIZE * 2);
+                                gfxPolyList[gfxVertexSize].x = deformX1 + (CHUNK_SIZE * 2) + 1;
                                 gfxPolyList[gfxVertexSize].y = deformY;
                                 gfxPolyList[gfxVertexSize].u = tileUVArray[tiles128x128.gfxDataPos[gfxIndex] + tileGFXPos];
                                 tileGFXPos++;
@@ -3291,7 +3305,7 @@ void DrawHLineScrollLayer(int layerID)
                                 gfxPolyList[gfxVertexSize].colour.a = 0xFF;
                                 gfxVertexSize++;
 
-                                gfxPolyList[gfxVertexSize].x        = deformX2 + (CHUNK_SIZE * 2);
+                                gfxPolyList[gfxVertexSize].x        = deformX2 + (CHUNK_SIZE * 2) + 1;
                                 gfxPolyList[gfxVertexSize].y        = deformY + (CHUNK_SIZE * 2);
                                 gfxPolyList[gfxVertexSize].u        = gfxPolyList[gfxVertexSize - 2].u;
                                 gfxPolyList[gfxVertexSize].v        = tileUVArray[tiles128x128.gfxDataPos[gfxIndex] + tileGFXPos];
@@ -3316,7 +3330,7 @@ void DrawHLineScrollLayer(int layerID)
                             }
                             case FLIP_Y: {
                                 gfxPolyList[gfxVertexSize].x = deformX2;
-                                gfxPolyList[gfxVertexSize].y = deformY + (CHUNK_SIZE * 2);
+                                gfxPolyList[gfxVertexSize].y = deformY + (CHUNK_SIZE * 2) + 1;
                                 gfxPolyList[gfxVertexSize].u = tileUVArray[tiles128x128.gfxDataPos[gfxIndex] + tileGFXPos];
                                 tileGFXPos++;
                                 gfxPolyList[gfxVertexSize].v = tileUVArray[tiles128x128.gfxDataPos[gfxIndex] + tileGFXPos];
@@ -3328,7 +3342,7 @@ void DrawHLineScrollLayer(int layerID)
                                 gfxVertexSize++;
 
                                 gfxPolyList[gfxVertexSize].x = deformX2 + (CHUNK_SIZE * 2);
-                                gfxPolyList[gfxVertexSize].y = deformY + (CHUNK_SIZE * 2);
+                                gfxPolyList[gfxVertexSize].y = deformY + (CHUNK_SIZE * 2) + 1;
                                 gfxPolyList[gfxVertexSize].u = tileUVArray[tiles128x128.gfxDataPos[gfxIndex] + tileGFXPos];
                                 tileGFXPos++;
                                 gfxPolyList[gfxVertexSize].v        = gfxPolyList[gfxVertexSize - 1].v;
@@ -3363,7 +3377,7 @@ void DrawHLineScrollLayer(int layerID)
                             }
                             case FLIP_XY: {
                                 gfxPolyList[gfxVertexSize].x = deformX2 + (CHUNK_SIZE * 2);
-                                gfxPolyList[gfxVertexSize].y = deformY + (CHUNK_SIZE * 2);
+                                gfxPolyList[gfxVertexSize].y = deformY + (CHUNK_SIZE * 2) + 1;
                                 gfxPolyList[gfxVertexSize].u = tileUVArray[tiles128x128.gfxDataPos[gfxIndex] + tileGFXPos];
                                 tileGFXPos++;
                                 gfxPolyList[gfxVertexSize].v = tileUVArray[tiles128x128.gfxDataPos[gfxIndex] + tileGFXPos];
@@ -3375,7 +3389,7 @@ void DrawHLineScrollLayer(int layerID)
                                 gfxVertexSize++;
 
                                 gfxPolyList[gfxVertexSize].x = deformX2;
-                                gfxPolyList[gfxVertexSize].y = deformY + (CHUNK_SIZE * 2);
+                                gfxPolyList[gfxVertexSize].y = deformY + (CHUNK_SIZE * 2) + 1;
                                 gfxPolyList[gfxVertexSize].u = tileUVArray[tiles128x128.gfxDataPos[gfxIndex] + tileGFXPos];
                                 tileGFXPos++;
                                 gfxPolyList[gfxVertexSize].v        = gfxPolyList[gfxVertexSize - 1].v;

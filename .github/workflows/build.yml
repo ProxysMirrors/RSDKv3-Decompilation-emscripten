@@ -184,3 +184,30 @@ jobs:
           with:
             name: v3-mac
             path: build/Applications/RSDKv3.zip
+  v3-web:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Setup Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 3.1.64
+      - name: Build RSDKv3 Web
+        run: |
+          emcmake cmake -B build-web ${{env.GENERAL_FLAGS}}
+          cmake --build build-web --parallel
+      - name: Move artifacts
+        run: |
+          mkdir artifacts
+          mv ./build-web/*.html ./artifacts || true
+          mv ./build-web/*.js ./artifacts || true
+          mv ./build-web/*.wasm ./artifacts || true
+          mv ./build-web/*.data ./artifacts || true
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: v3-web
+          path: artifacts

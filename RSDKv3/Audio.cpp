@@ -44,11 +44,34 @@ SDL_AudioStream *ogv_stream;
 #define ADJUST_VOLUME(s, v) (s = (s * v) / MAX_VOLUME)
 #endif
 
+#if RETRO_PLATFORM == RETRO_WEB
+#include <emscripten/emscripten.h>
+#endif
+
+extern "C" {
+EMSCRIPTEN_KEEPALIVE void TryResumeAudioDevice()
+{
+#if RETRO_USING_SDL2
+    if (audioDevice > 0) {
+        SDL_PauseAudioDevice(audioDevice, 0);
+    }
+#endif
+}
+}
+
 int InitAudioPlayback()
 {
     StopAllSfx(); //"init"
 #if RETRO_USING_SDL1 || RETRO_USING_SDL2
-    SDL_AudioSpec want;
+    if (SDL_WasInit(SDL_INIT_AUDIO) == 0) {
+        if (SDL_Init(SDL_INIT_AUDIO) < 0) {
+            PrintLog("Unable to initialize SDL audio: %s", SDL_GetError());
+            audioEnabled = false;
+            return true;
+        }
+    }
+
+    SDL_AudioSpec want, have;
     want.freq     = AUDIO_FREQUENCY;
     want.format   = AUDIO_FORMAT;
     want.samples  = AUDIO_SAMPLES;
@@ -58,7 +81,12 @@ int InitAudioPlayback()
 #if RETRO_USING_SDL2
     if ((audioDevice = SDL_OpenAudioDevice(nullptr, 0, &want, &audioDeviceFormat, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE)) > 0) {
         audioEnabled = true;
+#if RETRO_PLATFORM == RETRO_WEB
+        // Browsers usually require a user gesture before audio can begin.
+        SDL_PauseAudioDevice(audioDevice, 1);
+#else
         SDL_PauseAudioDevice(audioDevice, 0);
+#endif
         PrintLog("Opened audio device: %d", audioDevice);
     }
     else {
@@ -339,7 +367,7 @@ void ProcessAudioPlayback(void *userdata, Uint8 *stream, int len)
         // Mix music
         ProcessMusicStream(mix_buffer, samples_to_do * sizeof(Sint16));
 
-#if RETRO_USING_SDL2
+#if RETRO_USING_SDL2 && RETRO_PLATFORM != RETRO_WEB
         // Process music being played by a ogv video
         if (videoPlaying == 1) {
             // Fetch THEORAPLAY audio packets, and shove them into the SDL Audio Stream
@@ -642,6 +670,10 @@ bool PlayMusic(int track)
 {
     if (!audioEnabled)
         return false;
+
+#if RETRO_PLATFORM == RETRO_WEB
+    StopMusic();
+#endif
 
 #if !RETRO_USE_ORIGINAL_CODE
     if (StrComp(musicTracks[track].fileName, "Data/Music/")) {

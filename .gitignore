@@ -295,3 +295,10 @@ android/local.properties
 .flatpak-builder
 flatpak/*.apk
 build-dir
+build-web/
+build_web_DEV/
+*.html
+!platforms/web/shell.html
+Data.rsdk
+videos/
+build-web-DEV/RSDKv3.data

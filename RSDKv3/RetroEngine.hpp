@@ -49,6 +49,7 @@ typedef unsigned int uint;
 #define RETRO_VITA (7)
 #define RETRO_UWP  (8)
 #define RETRO_LINUX (9)
+#define RETRO_WEB  (10)
 
 // Platform types (Game manages platform-specific code such as HUD position using this rather than the above)
 #define RETRO_STANDARD (0)
@@ -83,6 +84,8 @@ typedef unsigned int uint;
 #define RETRO_PLATFORM (RETRO_ANDROID)
 #elif defined __vita__
 #define RETRO_PLATFORM (RETRO_VITA)
+#elif defined __EMSCRIPTEN__
+#define RETRO_PLATFORM (RETRO_WEB)
 #elif defined __linux__
 #define RETRO_PLATFORM (RETRO_LINUX)
 #else
@@ -112,7 +115,7 @@ typedef unsigned int uint;
 #endif
 
 #if RETRO_PLATFORM == RETRO_WIN || RETRO_PLATFORM == RETRO_OSX || RETRO_PLATFORM == RETRO_iOS || RETRO_PLATFORM == RETRO_VITA                        \
-    || RETRO_PLATFORM == RETRO_UWP || RETRO_PLATFORM == RETRO_ANDROID || RETRO_PLATFORM == RETRO_LINUX
+    || RETRO_PLATFORM == RETRO_UWP || RETRO_PLATFORM == RETRO_ANDROID || RETRO_PLATFORM == RETRO_LINUX || RETRO_PLATFORM == RETRO_WEB
 #ifdef RETRO_USE_SDL2
 #define RETRO_USING_SDL1 (0)
 #define RETRO_USING_SDL2 (1)
@@ -202,6 +205,8 @@ typedef unsigned int uint;
 #elif RETRO_PLATFORM == RETRO_UWP
 #define RETRO_GAMEPLATFORMID (UAP_GetRetroGamePlatformId())
 #elif RETRO_PLATFORM == RETRO_LINUX
+#define RETRO_GAMEPLATFORMID (RETRO_STANDARD)
+#elif RETRO_PLATFORM == RETRO_WEB
 #define RETRO_GAMEPLATFORMID (RETRO_STANDARD)
 #else
 #error Unspecified RETRO_GAMEPLATFORMID
@@ -350,27 +355,33 @@ enum RetroBytecodeFormat {
 #define SCREEN_YSIZE   (240)
 #define SCREEN_CENTERY (SCREEN_YSIZE / 2)
 
-#if RETRO_PLATFORM == RETRO_WIN || RETRO_PLATFORM == RETRO_UWP || RETRO_PLATFORM == RETRO_ANDROID || RETRO_PLATFORM == RETRO_LINUX
+#if RETRO_PLATFORM == RETRO_WIN || RETRO_PLATFORM == RETRO_UWP || RETRO_PLATFORM == RETRO_ANDROID || RETRO_PLATFORM == RETRO_LINUX || RETRO_PLATFORM == RETRO_WEB
 #if RETRO_USING_SDL2
 #include <SDL.h>
 #elif RETRO_USING_SDL1
 #include <SDL.h>
 #endif
 #include <vorbis/vorbisfile.h>
+#if RETRO_PLATFORM != RETRO_WEB
 #include <theora/theora.h>
 #include <theoraplay.h>
+#endif
 #elif RETRO_PLATFORM == RETRO_OSX
 #include <SDL2/SDL.h>
 #include <Vorbis/vorbisfile.h>
+#if RETRO_PLATFORM != RETRO_WEB
 #include <Theora/theora.h>
 #include "theoraplay.h"
+#endif
 
 #include "cocoaHelpers.hpp"
 #elif RETRO_PLATFORM == RETRO_iOS
 #include <SDL2/SDL.h>
 #include <vorbis/vorbisfile.h>
+#if RETRO_PLATFORM != RETRO_WEB
 #include <Theora/theora.h>
 #include "theoraplay.h"
+#endif
 
 #include "cocoaHelpers.hpp"
 #elif RETRO_PLATFORM == RETRO_VITA
@@ -481,6 +492,7 @@ public:
     bool useHQModes         = true;
 #endif
 
+    int windowRefreshTimer = 0;
     void Init();
     void Run();
 
@@ -583,4 +595,17 @@ public:
 };
 
 extern RetroEngine Engine;
-#endif // !RETROENGINE_H
+
+#if RETRO_PLATFORM == RETRO_WEB
+extern bool webStorageInitialised;
+#ifdef __cplusplus
+extern "C" {
+#endif
+void SetWebStorageInitialised();
+void TryResumeAudioDevice();
+#ifdef __cplusplus
+}
+#endif
+#endif
+
+#endif // RETROENGINE_H

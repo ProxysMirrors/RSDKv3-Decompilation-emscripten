@@ -419,12 +419,16 @@ void ProcessInput()
         if (mx == lastMouseX && my == lastMouseY) {
             ++mouseHideTimer;
             if (mouseHideTimer == 120) {
+#if RETRO_PLATFORM != RETRO_WEB
                 SDL_ShowCursor(false);
+#endif
             }
         }
         else {
             if (mouseHideTimer >= 120)
+#if RETRO_PLATFORM != RETRO_WEB
                 SDL_ShowCursor(true);
+#endif
             mouseHideTimer  = 0;
             Engine.dimTimer = 0;
         }

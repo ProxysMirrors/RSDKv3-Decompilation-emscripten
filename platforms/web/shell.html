@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+    <title>RSDKv3 Web Port</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: #fff;
+            font-family: sans-serif;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        #container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #canvas {
+            border: 0 none;
+            background-color: #000;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: none;
+        }
+        #engine-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: none;
+            z-index: 15;
+            background-color: #000;
+        }
+        #status {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.2rem;
+            text-align: center;
+            z-index: 20;
+        }
+        #play-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+            cursor: pointer;
+        }
+        #play-button {
+            padding: 20px 40px;
+            font-size: 2rem;
+            background-color: #fff;
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .spinner {
+            display: block;
+            margin: 0 auto 10px;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="status">
+            <div class="spinner"></div>
+            <div id="status-text">Loading...</div>
+        </div>
+
+        <div id="play-overlay">
+            <button id="play-button">Click to Play</button>
+        </div>
+
+        <video id="engine-video" playsinline></video>
+        <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+    </div>
+
+    <script type="text/javascript">
+        var statusElement = document.getElementById('status-text');
+        var statusContainer = document.getElementById('status');
+        var canvasElement = document.getElementById('canvas');
+        var playOverlay = document.getElementById('play-overlay');
+        var playButton = document.getElementById('play-button');
+        var engineVideo = document.getElementById('engine-video');
+
+        var gameStarted = false;
+
+        function startGame() {
+            if (gameStarted) return;
+            gameStarted = true;
+            playOverlay.style.display = 'none';
+            canvasElement.style.display = 'block';
+            if (Module._TryResumeAudioDevice) Module._TryResumeAudioDevice();
+            canvasElement.focus();
+        }
+
+        playOverlay.addEventListener('click', startGame);
+        playButton.addEventListener('click', startGame);
+
+        document.addEventListener('fullscreenchange', function() {
+            if (!document.fullscreenElement) {
+                // Use setTimeout to ensure browser has fully completed
+                // the fullscreen exit and layout reflow
+                setTimeout(function() {
+                    // Remove hardcoded dimensions SDL set during fullscreen
+                    canvasElement.removeAttribute('width');
+                    canvasElement.removeAttribute('height');
+
+                    requestAnimationFrame(function() {
+                        var w = canvasElement.clientWidth;
+                        var h = canvasElement.clientHeight;
+                        console.log('Post-fullscreen canvas:', w, h);
+                        if (w > 0 && h > 0) {
+                            canvasElement.width = w;
+                            canvasElement.height = h;
+                            if (Module._RefreshWindow) Module._RefreshWindow();
+                        }
+                    });
+                }, 150);
+            }
+        });
+
+        var Module = {
+            preRun: [],
+            postRun: [
+                function() {
+                    playOverlay.style.display = 'flex';
+                    statusContainer.style.display = 'none';
+                }
+            ],
+            print: function(text) { console.log(text); },
+            canvas: (function() {
+                canvasElement.addEventListener("webglcontextlost", function(e) { 
+                    alert('WebGL context lost. You will need to reload the page.'); 
+                    e.preventDefault(); 
+                }, false);
+                return canvasElement;
+            })(),
+            setStatus: function(text) {
+                if (!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' };
+                if (text === Module.setStatus.last.text) return;
+                var now = Date.now();
+                if (now - Module.setStatus.last.time < 30) return;
+                Module.setStatus.last.time = now;
+                Module.setStatus.last.text = text;
+                if (text) {
+                    statusElement.innerHTML = text;
+                    if (!gameStarted) statusContainer.style.display = 'block';
+                } else {
+                    statusContainer.style.display = 'none';
+                }
+            },
+            totalDependencies: 0,
+            monitorRunDependencies: function(left) {
+                this.totalDependencies = Math.max(this.totalDependencies, left);
+                Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+            },
+            
+            // --- ENGINE VIDEO PLAYER BRIDGE ---
+            rsdkVideoActive: false,
+            
+            rsdkInitEngineVideo: function(path, track) {
+                console.log('Engine Video Init (Native):', path, 'Track:', track);
+                try {
+                    var data = FS.readFile(path);
+                    var type = path.toLowerCase().endsWith('.mp4') ? 'video/mp4' : 'video/ogg';
+                    var blob = new Blob([data], { type: type });
+                    var url = URL.createObjectURL(blob);
+                    
+                    Module.rsdkVideoActive = true;
+                    // Append track parameter as a hint for some setups, though Blob URL might ignore it
+                    engineVideo.src = url + "#track=" + track;
+                    engineVideo.style.display = 'block';
+                    
+                    engineVideo.onloadedmetadata = function() {
+                        console.log('Video Metadata Loaded. detected tracks:', engineVideo.audioTracks ? engineVideo.audioTracks.length : 'API Not Supported');
+                        // Native track selection (Safari mostly)
+                        if (engineVideo.audioTracks && engineVideo.audioTracks.length > track) {
+                            for (var i = 0; i < engineVideo.audioTracks.length; i++) {
+                                var enabled = (i == track);
+                                engineVideo.audioTracks[i].enabled = enabled;
+                                console.log('Track ' + i + (enabled ? ' ENABLED' : ' disabled'));
+                            }
+                        } else if (engineVideo.audioTracks) {
+                            console.warn('Requested track index ' + track + ' out of bounds (length: ' + engineVideo.audioTracks.length + ')');
+                        }
+                    };
+
+                    engineVideo.onended = function() { Module.rsdkStopEngineVideo(); };
+                    engineVideo.onerror = function() { Module.rsdkStopEngineVideo(); };
+                    
+                    engineVideo.play().catch(function(e) { console.error('Video Play Error:', e); });
+                } catch (e) {
+                    console.error('Engine Video Exception:', e);
+                    Module.rsdkVideoActive = false;
+                }
+            },
+            
+            rsdkUpdateEngineVideo: function(skip) {
+                if (!Module.rsdkVideoActive || skip) {
+                    Module.rsdkStopEngineVideo();
+                    return 0; // Finished or skipped
+                }
+                return 1; // Still playing
+            },
+            
+            rsdkStopEngineVideo: function() {
+                if (!Module.rsdkVideoActive) return;
+                Module.rsdkVideoActive = false;
+                engineVideo.pause();
+                engineVideo.style.display = 'none';
+                var oldUrl = engineVideo.src;
+                engineVideo.removeAttribute('src');
+                engineVideo.load();
+                if (oldUrl && oldUrl.startsWith('blob:')) URL.revokeObjectURL(oldUrl);
+            }
+        };
+        Module.setStatus('Downloading...');
+    </script>
+    {{{ SCRIPT }}}
+</body>
+</html>

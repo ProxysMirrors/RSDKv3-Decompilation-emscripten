@@ -1,0 +1,29 @@
+#include "RetroEngine.hpp"
+
+#if RETRO_PLATFORM == RETRO_WEB
+#include <emscripten/emscripten.h>
+#endif
+
+RetroEngine Engine;
+
+void RetroEngine::Run()
+{
+#if RETRO_PLATFORM == RETRO_WEB
+    // Wait for storage
+    if (!webStorageInitialised) return;
+#endif
+
+    while (SDL_PollEvent(&sdlEvents)) {
+        // ... poll events ...
+    }
+
+    // High precision frame limiter for web
+#if RETRO_PLATFORM == RETRO_WEB
+    static double lastFrame = 0;
+    double currentFrame = emscripten_get_now();
+    if (currentFrame - lastFrame < 16.666) return;
+    lastFrame = currentFrame;
+#endif
+
+    // ... existing game loop logic ...
+}

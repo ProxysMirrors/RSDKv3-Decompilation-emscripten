@@ -1,0 +1,20 @@
+
+```cpp
+emscripten_set_main_loop_arg(MainLoopWeb, this, refreshRate, 1);
+```
+
+**This is worse than rate `0`.** When you pass a non-zero rate to `emscripten_set_main_loop_arg`, Emscripten uses `setInterval` instead of `requestAnimationFrame`. `setInterval` is not synchronized to the display's vsync at all — it's a JavaScript timer that fires whenever the JS event loop gets around to it, which drifts, gets throttled in background tabs, and is generally less precise than rAF. This will likely make tearing *worse*, not better.
+
+Rate `0` was actually correct — it means "use `requestAnimationFrame`", which is exactly what you want for a game loop. The fix should be to revert that one line back to `0`:
+
+```cpp
+emscripten_set_main_loop_arg(MainLoopWeb, this, 0, 1);
+```
+
+The rest of the web changes are fine — removing the `nextFrameTime` manual timer and the dead code block were both correct. Just that one line needs reverting.
+
+So the final state of all fixes should be:
+- `Drawing.cpp`: `SDL_RENDERER_PRESENTVSYNC` when vsync enabled ✓
+- `RetroEngine.cpp` native: frame limiter before `FlipScreen()` ✓  
+- `RetroEngine.cpp` web: rAF via rate `0`, no manual timer ← needs revert
+- `Video.cpp`: tight audio lock scope ✓

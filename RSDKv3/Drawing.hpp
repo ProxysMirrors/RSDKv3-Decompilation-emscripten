@@ -139,7 +139,11 @@ void FlipScreenVideo();
 void ReleaseRenderDevice();
 
 void SetFullScreen(bool fs);
-
+#if RETRO_PLATFORM == RETRO_WEB
+extern "C" void RefreshWindow();
+#else
+void RefreshWindow();
+#endif
 void GenerateBlendLookupTable();
 
 inline void ClearGraphicsData()

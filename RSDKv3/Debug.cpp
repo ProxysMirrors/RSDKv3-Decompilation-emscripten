@@ -4,6 +4,15 @@ int touchFlags = 0;
 
 void PrintLog(const char *msg, ...)
 {
+#if RETRO_PLATFORM == RETRO_WEB
+    char buffer[0x100];
+    va_list args;
+    va_start(args, msg);
+    vsprintf(buffer, msg, args);
+    printf("%s\n", buffer);
+    va_end(args);
+#endif
+
     if (engineDebugMode || Engine.consoleEnabled) {
         char buffer[0x100];
 
