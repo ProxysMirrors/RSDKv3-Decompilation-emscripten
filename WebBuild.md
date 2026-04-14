@@ -50,7 +50,7 @@ emmake make -j$(nproc)
 
 ## 5. Single-File HTML Generation
 
-(Note: You need to have eather Standard Build or DEV Build compiled alrighty)
+(Note: You need to have eather Standard Build or DEV Build compiled alrighty and make sure that you haven't compiled it with ogv files inside "videos")
 
 This combines the build files into one single standalone file that can be opened without a server 
 
@@ -65,10 +65,10 @@ node compile.js build_web_DEV
 ```
 
 **Outputs**:
-*   `RSDKv3_SingleFile.html` (~800MB)
-*   `RSDKv3_DEV_SingleFile.html` (~800MB)
+*   `RSDKv3_SingleFile.html` (~259.3MB)
+*   `RSDKv3_DEV_SingleFile.html` (~259.3MB)
 
-*Note: that its gonna take a long time to load these in due to large size added in by the videos. if you wanted them in smaller size and faster load time, remove the videos or rename the "videos" folder to something else.*
+*Note: t̶h̶a̶t̶ ̶i̶t̶s̶ ̶g̶o̶n̶n̶a̶ ̶t̶a̶k̶e̶ ̶a̶ ̶l̶o̶n̶g̶ ̶t̶i̶m̶e̶ ̶t̶o̶ ̶l̶o̶a̶d̶ ̶t̶h̶e̶s̶e̶ ̶i̶n̶ ̶d̶u̶e̶ ̶t̶o̶ ̶l̶a̶r̶g̶e̶ ̶s̶i̶z̶e̶ ̶a̶d̶d̶e̶d̶ ̶i̶n̶ ̶b̶y̶ ̶t̶h̶e̶ ̶v̶i̶d̶e̶o̶s̶.̶ ̶i̶f̶ ̶y̶o̶u̶ ̶w̶a̶n̶t̶e̶d̶ ̶t̶h̶e̶m̶ ̶i̶n̶ ̶s̶m̶a̶l̶l̶e̶r̶ ̶s̶i̶z̶e̶ ̶a̶n̶d̶ ̶f̶a̶s̶t̶e̶r̶ ̶l̶o̶a̶d̶ ̶t̶i̶m̶e̶,̶ ̶r̶e̶m̶o̶v̶e̶ ̶t̶h̶e̶ ̶v̶i̶d̶e̶o̶s̶ ̶o̶r̶ ̶r̶e̶n̶a̶m̶e̶ ̶t̶h̶e̶ ̶"̶v̶i̶d̶e̶o̶s̶"̶ ̶f̶o̶l̶d̶e̶r̶ ̶t̶o̶ ̶s̶o̶m̶e̶t̶h̶i̶n̶g̶ ̶e̶l̶s̶e̶.̶ Edited: This is caused by having ogv file compiled inside "RSDKv3.data"*
 
 ## 6. Debug Controls
 
